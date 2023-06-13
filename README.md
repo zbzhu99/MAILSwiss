@@ -19,39 +19,39 @@ This is a multi-agent version of [ILSwiss](https://github.com/Ericonaldo/ILSwiss
 
 1. Configurate conda environment:
 
-```bash
-conda env create --name mail --file=env.yml
-pip install -e .
-```
+    ```bash
+    conda env create --name mail --file=env.yml
+    pip install -e .
+    ```
 
 2. Run RL algorithms to obtain expert policy:
 
-```bash
-python run_experiments.py -e exp_specs/sac/sac_mpe_spread.yaml
-```
+    ```bash
+    python run_experiments.py -e exp_specs/sac/sac_mpe_spread.yaml
+    ```
 
 3. Generate expert demostrations using trained policy:
 
-First change `policy_log_dir` in `exp_specs/gen_expert/mpe_spread.yaml` to the path of rl training log directory, then run:
+    First change `policy_log_dir` in `exp_specs/gen_expert/mpe_spread.yaml` to the path of rl training log directory, then run:
 
-```bash
-python run_experiments.py -e exp_specs/gen_expert/mpe_spread.yaml
-```
+    ```bash
+    python run_experiments.py -e exp_specs/gen_expert/mpe_spread.yaml
+    ```
 
-Add the path of generated demonstrations in `demos_listing.yaml`.
+    Add the path of generated demonstrations in `demos_listing.yaml`.
 
 4. Run GAIL:
 
-Make sure `expert_name` in `exp_specs/gail/gail_mpe_spread.yaml` is the same as the name in `demos_listing.yaml`, then run:
+    Make sure `expert_name` in `exp_specs/gail/gail_mpe_spread.yaml` is the same as the name in `demos_listing.yaml`, then run:
 
-```bash
-python run_experiments.py -e exp_specs/gail/gail_mpe_spread.yaml
-```
+    ```bash
+    python run_experiments.py -e exp_specs/gail/gail_mpe_spread.yaml
+    ```
 
 5. Run BC:
 
-Make sure `expert_name` in `exp_specs/bc/bc_mpe_spread.yaml` is the same as the name in `demos_listing.yaml`, then run:
+    Make sure `expert_name` in `exp_specs/bc/bc_mpe_spread.yaml` is the same as the name in `demos_listing.yaml`, then run:
 
-```bash
-python run_experiments.py -e exp_specs/bc/bc_mpe_spread.yaml
-```
+    ```bash
+    python run_experiments.py -e exp_specs/bc/bc_mpe_spread.yaml
+    ```
