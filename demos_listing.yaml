@@ -1,0 +1,29 @@
+hopper_sac:
+  description: "Hopper, expert"
+  file_paths: [
+    ./demos/expert_trajs_50/Hopper/seed-0/exp_trajs_sac_50.pkl
+  ]
+
+walker_sac:
+  description: "Walker, expert"
+  file_paths: [
+    ./demos/expert_trajs_50/Walker2d/seed-0/exp_trajs_sac_50.pkl
+  ]
+
+halfcheetah_sac:
+  description: "Halfcheetah, expert"
+  file_paths: [
+    ./demos/expert_trajs_50/HalfCheetah/seed-0/exp_trajs_sac_50.pkl
+  ]
+
+humanoid_sac:
+  description: "Humanoid, expert"
+  file_paths: [
+    ./demos/expert_trajs_50/Humanoid/seed-0/exp_trajs_sac_50.pkl
+  ]
+
+mpe_spread_sac:
+  description: "Multi-agent Particle Env Simple Spread, expert"
+  file_paths: [
+    ./demos/mpe/simple_spread_v2/expert_sac.pkl
+  ]

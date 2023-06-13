@@ -1,0 +1,54 @@
+meta_data:
+  script_path: run_scripts/discrete_sac_alpha_exp_script.py
+  exp_name: test_discrete_sac_cartpole
+  description: Train an agent using Soft-Actor-Critic
+  num_workers: 1
+  using_gpus: true
+# -----------------------------------------------------------------------------
+variables:
+  seed: [723894]
+
+# -----------------------------------------------------------------------------
+constants:
+  net_size: 256
+  num_hidden_layers: 2
+
+  rl_alg_params:
+    num_epochs: 282
+    num_steps_per_epoch: 10000
+    num_steps_between_train_calls: 10
+    num_train_steps_per_train_call: 1
+    num_steps_per_eval: 5000
+    max_path_length: 200
+    min_steps_before_training: 1000
+
+    eval_deterministic: true
+
+    batch_size: 128
+    replay_buffer_size: 20000
+    no_terminal: false
+    wrap_absorbing: false
+
+    save_best: false
+    freq_saving: 10
+    save_replay_buffer: false
+    save_environment: false
+    save_algorithm: false
+
+  sac_params:
+    alpha: 0.05
+    reward_scale: 1.0
+    discount: 0.95
+    soft_target_tau: 0.005
+    policy_lr: 0.0001
+    qf_lr: 0.001
+    alpha_lr: 0.0003
+
+  env_specs:
+    env_creator: "gym"
+    env_name: "CartPole-v0"
+    env_kwargs: {}
+    training_env_seed: 24495
+    training_env_num: 1
+    eval_env_seed: 78236
+    eval_env_num: 1

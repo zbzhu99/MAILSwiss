@@ -1,0 +1,54 @@
+meta_data:
+  script_path: run_scripts/discrete_sac_exp_script.py
+  exp_name: discrete_sac_mpe_spread
+  description: Train an agent using Soft-Actor-Critic
+  num_workers: 1
+  using_gpus: true
+# -----------------------------------------------------------------------------
+variables:
+  seed: [0]
+
+# -----------------------------------------------------------------------------
+constants:
+  net_size: 256
+  num_hidden_layers: 2
+  share_policy: True
+
+  rl_alg_params:
+    num_epochs: 100
+    num_steps_per_epoch: 10000
+    num_steps_between_train_calls: 100
+    num_train_steps_per_train_call: 100
+    num_steps_per_eval: 5000
+    max_path_length: 25
+    min_steps_before_training: 1000
+
+    eval_deterministic: true
+
+    batch_size: 256
+    replay_buffer_size: 10000
+    no_terminal: false
+    wrap_absorbing: false
+
+    save_best: true
+    freq_saving: 10
+    save_replay_buffer: false
+    save_environment: false
+    save_algorithm: false
+
+  sac_params:
+    alpha: 0.05
+    reward_scale: 1.0
+    discount: 0.99
+    soft_target_tau: 0.005
+    policy_lr: 0.0001
+    qf_lr: 0.001
+
+  env_specs:
+    env_creator: "mpe"
+    env_name: "simple_spread_v2"
+    env_kwargs: {}
+    training_env_seed: 24495
+    training_env_num: 1
+    eval_env_seed: 78236
+    eval_env_num: 1

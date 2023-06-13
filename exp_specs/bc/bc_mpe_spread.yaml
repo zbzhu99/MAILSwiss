@@ -1,0 +1,63 @@
+meta_data:
+  script_path: run_scripts/bc_exp_script.py # This assign the running script file
+  exp_name: bc_mpe_spread # This decides the name of the log dir
+  description: Train a Behavioural Cloning model # Just an annotation
+  num_workers: 1 # This decides how many sub-process will be run at the same time, the extra progress will fail after the resources of the machine are all occupied
+  using_gpus: true # Whether to use GPU
+
+# -----------------------------------------------------------------------------
+variables: # If you want to do grid search, take the constant variables to here and write down the grid value in a list, the run_experiment.py will split every combination of these varibles into small yaml files
+  seed: [1848]
+
+# -----------------------------------------------------------------------------
+constants: # These are constant hyperparameters without tunning, and the name is defined by your algorithm, however there are many common hyperparameters
+  expert_name: 'mpe_spread_sac'
+  expert_idx: 0
+  traj_num: -1
+  share_policy: True
+
+  policy_net_size: 256
+  policy_num_hidden_layers: 2
+
+  bc_params:
+    mode: 'MLE'
+
+    num_epochs: 100 # Running epoch 
+    num_steps_per_epoch: 1 # Sample steps per epoch (actually BC do not need sample)
+    num_steps_between_train_calls: 1 # How frequency to train the algorithm 
+    max_path_length: 20 # The sample length in a episode
+    min_steps_before_training: 0 # Just as it names
+
+    eval_deterministic: false
+    num_steps_per_eval: 5000
+    eval_sampler_kwargs: {}
+
+    replay_buffer_size: 20000
+    no_terminal: false
+    eval_no_terminal: false
+    wrap_absorbing: false
+
+    num_updates_per_train_call: 100
+    lr: 0.003
+    momentum: 0.9
+    batch_size: 256
+
+    best_key: "Test Ep. Len. Mean"
+    objective: "minimize"
+    save_best: true
+    save_best_starting_from_epoch: 0
+
+    freq_saving: 20
+    save_replay_buffer: false
+    save_environment: false
+    save_algorithm: false
+
+  env_specs:
+    env_creator: "mpe"
+    env_name: "simple_spread_v2"
+    env_kwargs: 
+      continuous_actions: true
+    training_env_num: 1
+    eval_env_num: 10
+    training_env_seed: 24495
+    eval_env_seed: 78236

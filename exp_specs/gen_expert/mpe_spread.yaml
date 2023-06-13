@@ -1,0 +1,27 @@
+meta_data:
+  script_path: run_scripts/gen_expert_demos.py
+  exp_name: gen_gridworld_demo
+  description: generate expert demonstrations for the gridworld environement
+  num_workers: 1
+  using_gpus: true
+# -----------------------------------------------------------------------------
+variables:
+  seed: [0]
+
+# -----------------------------------------------------------------------------
+constants:
+  method: "sac"
+  policy_log_dir: "logs/sac-mpe-spread/sac_mpe_spread_2023_06_13_10_46_43_0000--s-0"
+
+  eval_deterministic: true
+  num_eval_steps: 5000
+  max_path_length: 25
+  no_terminal: false
+
+  env_specs:
+    env_creator: "mpe"
+    env_name: "simple_spread_v2"
+    env_kwargs: 
+      continuous_actions: true
+    eval_env_seed: 23132
+    eval_env_num: 1
