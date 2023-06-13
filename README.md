@@ -1,6 +1,8 @@
-This is a multi-agent version of [ILSwiss](https://github.com/Ericonaldo/ILSwiss), which contains various reinforcement learning and imitation learning algorithms. Now the multi-agent interface only supports independent training among agents, and more complicated interacting interface such as CTDE (Centralized Training with Decentralized Execution) will be implemented in the future.
+# MAILSwiss
 
-# Current Available Algorithm
+This is a multi-agent version of [ILSwiss](https://github.com/Ericonaldo/ILSwiss), which contains various reinforcement learning and imitation learning algorithms. Now the multi-agent interface only supports independent training among agents, and more complicated interacting interface such as CTDE (Centralized Training with Decentralized Execution) will be implemented in the future. Any contributions are welcome!
+
+## Current Available Algorithms
 
 + [x] Soft Actor Critic
 
@@ -15,7 +17,7 @@ This is a multi-agent version of [ILSwiss](https://github.com/Ericonaldo/ILSwiss
 + [ ] MADDPG
 
 
-# Setup
+## Setup
 
 1. Configurate conda environment:
 
