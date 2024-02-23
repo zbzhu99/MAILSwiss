@@ -9,7 +9,6 @@ class HighwayEnv(BaseEnv):
     def __init__(self, **configs):
         super().__init__(**configs)
 
-        # create underlying mujoco env
         env_name = configs["env_name"]
         env_kwargs = configs["env_kwargs"]
         self._env = gymnasium.make(env_name, **env_kwargs)
