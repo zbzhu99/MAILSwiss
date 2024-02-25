@@ -22,3 +22,11 @@ def dict_list_to_list_dict(dict_list):
         for idx in range(len(list(dict_list.values())[0]))
     ]
     return list_dict
+
+
+class PrefixDict(dict):
+    def __getitem__(self, key):
+        for k in self.keys():
+            if key.startswith(k):
+                return super().__getitem__(k)
+        raise KeyError(key)

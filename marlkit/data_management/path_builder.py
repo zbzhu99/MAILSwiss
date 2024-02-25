@@ -1,20 +1,24 @@
+from collections import defaultdict
 import numpy as np
 
 
 class PathBuilder:
-    def __init__(self, agent_ids):
-        self.agent_ids = agent_ids
-        self.n_agents = len(agent_ids)
-        self.agent_path_builders = {a_id: AgentPathBuilder() for a_id in agent_ids}
+    def __init__(self):
+        # self.agent_path_builders = {a_id: AgentPathBuilder() for a_id in agent_ids}
+        self.agent_path_builders = defaultdict(AgentPathBuilder)
+
+    @property
+    def agent_ids(self):
+        return self.agent_path_builders.keys()
 
     def __len__(self):
-        return len(list(self.agent_path_builders.values())[0])
+        return sum([len(path_builder) for path_builder in self.agent_path_builders.values()])
 
     def __getitem__(self, agent_id):
         return self.agent_path_builders[agent_id]
 
     def get_all_agent_dict(self, key):
-        return {a_id: self.agent_path_builders[a_id][key] for a_id in self.agent_ids}
+        return {a_id: self.agent_path_builders[a_id][key] for a_id in self.agent_path_builders.keys()}
 
 
 class AgentPathBuilder(dict):

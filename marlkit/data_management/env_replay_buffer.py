@@ -1,6 +1,7 @@
 import numpy as np
 from gym.spaces import Box, Dict, Discrete, Tuple
 
+from marlkit.core import PrefixDict
 from marlkit.data_management.simple_replay_buffer import (
     AgentMetaSimpleReplayBuffer,
     AgentSimpleReplayBuffer,
@@ -8,20 +9,28 @@ from marlkit.data_management.simple_replay_buffer import (
 
 
 class EnvReplayBuffer:
-    def __init__(self, max_replay_buffer_size, env, random_seed=1995):
+    def __init__(self, max_replay_buffer_size, env, use_prefix_dict: bool = False):
         self._observation_space_n = env.observation_space_n
         self._action_space_n = env.action_space_n
         self.n_agents = env.n_agents
         self.agent_ids = env.agent_ids
-        # TODO(zbzhu): MAYBE change agent_buffers to policy_buffers
-        self.agent_buffer_n = {
-            a_id: AgentEnvReplayBuffer(
-                max_replay_buffer_size,
-                self._observation_space_n[a_id],
-                self._action_space_n[a_id],
+        if use_prefix_dict:
+            dict_cls = PrefixDict
+        else:
+            dict_cls = dict
+        self.agent_buffer_n = dict_cls(
+            zip(
+                self.agent_ids,
+                [
+                    AgentEnvReplayBuffer(
+                        max_replay_buffer_size,
+                        self._observation_space_n[a_id],
+                        self._action_space_n[a_id],
+                    )
+                    for a_id in self.agent_ids
+                ]
             )
-            for a_id in self.agent_ids
-        }
+        )
         self._max_replay_buffer_size = max_replay_buffer_size
 
     def num_steps_can_sample(self):
@@ -30,9 +39,8 @@ class EnvReplayBuffer:
     def random_batch(self, batch_size: int, agent_id: str, keys=None):
         return self.agent_buffer_n[agent_id].random_batch(batch_size, keys)
 
-    def terminate_episode(self):
-        for a_id in self.agent_ids:
-            self.agent_buffer_n[a_id].terminate_episode()
+    def terminate_episode(self, agent_id: str):
+        self.agent_buffer_n[agent_id].terminate_episode()
 
     def sample_trajs(
         self, num_trajs: int, agent_id: str, keys=None, samples_per_traj=None
@@ -44,7 +52,7 @@ class EnvReplayBuffer:
     def clear(self, agent_id: str):
         self.agent_buffer_n[agent_id].clear()
 
-    def add_path(self, path_n, absorbing=False, env=None):
+    def add_path(self, path_n, absorbing: bool = False, env=None):
         for a_id in self.agent_ids:
             self.agent_buffer_n[a_id].add_path(
                 path_n[a_id], absorbing=absorbing, env=env
@@ -52,22 +60,22 @@ class EnvReplayBuffer:
 
     def add_sample(
         self,
-        observation_n,
-        action_n,
-        reward_n,
-        terminal_n,
-        next_observation_n,
+        observation,
+        action,
+        reward,
+        terminal,
+        next_observation,
+        agent_id,
         **kwargs,
     ):
-        for a_id in observation_n.keys():
-            self.agent_buffer_n[a_id].add_sample(
-                observation_n[a_id],
-                action_n[a_id],
-                reward_n[a_id],
-                terminal_n[a_id],
-                next_observation_n[a_id],
-                **{k: v[a_id] if isinstance(v, dict) else v for k, v in kwargs.items()},
-            )
+        self.agent_buffer_n[agent_id].add_sample(
+            observation,
+            action,
+            reward,
+            terminal,
+            next_observation,
+            **kwargs,
+        )
 
 
 class AgentEnvReplayBuffer(AgentSimpleReplayBuffer):

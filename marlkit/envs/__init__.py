@@ -1,6 +1,6 @@
 import abc
 
-from marlkit.env_creators import GymEnv, MpeEnv, MujocoEnv
+from marlkit.env_creators import GymEnv, MpeEnv, MujocoEnv, HighwayEnv
 from marlkit.envs.vecenvs import BaseVectorEnv, DummyVectorEnv, SubprocVectorEnv
 from marlkit.envs.wrappers import ProxyEnv
 
@@ -25,6 +25,8 @@ def get_env(env_specs):
         env_class = MpeEnv
     elif env_creator == "gym":
         env_class = GymEnv
+    elif env_creator == "highway":
+        env_class = HighwayEnv
     else:
         raise NotImplementedError
 
@@ -56,6 +58,8 @@ def get_envs(
         env_class = MpeEnv
     elif env_creator == "gym":
         env_class = GymEnv
+    elif env_creator == "highway":
+        env_class = HighwayEnv
     else:
         raise NotImplementedError
 

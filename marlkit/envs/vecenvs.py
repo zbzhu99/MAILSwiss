@@ -185,19 +185,22 @@ class BaseVectorEnv(Env):
         obs_list = [
             self.workers[i].reset(**kwargs) for i, kwargs in zip(id, kwargs_list)
         ]  # list of dict
-        obs_dict = list_dict_to_dict_list(obs_list)  # dict of list
-        for a_id in obs_dict.keys():
-            try:
-                obs_dict[a_id] = np.stack(obs_dict[a_id])
-            except ValueError:  # different len(obs)
-                obs_dict[a_id] = np.array(obs_dict[a_id], dtype=object)
-            if self.obs_rms_n and self.update_obs_rms:
-                self.obs_rms_n[a_id].update(obs_dict[a_id])
-        # in case different agents share the same noramlizer, one should normlize obs
-        # after all normalizers are updated.
-        for a_id in obs_dict.keys():
-            obs_dict[a_id] = self.normalize_obs(obs_dict[a_id], a_id)
-        return dict(obs_dict)
+        if self.obs_rms_n is not None:
+            raise NotImplementedError
+        return np.array(obs_list)
+        # obs_dict = list_dict_to_dict_list(obs_list)  # dict of list
+        # for a_id in obs_dict.keys():
+        #     try:
+        #         obs_dict[a_id] = np.stack(obs_dict[a_id])
+        #     except ValueError:  # different len(obs)
+        #         obs_dict[a_id] = np.array(obs_dict[a_id], dtype=object)
+        #     if self.obs_rms_n and self.update_obs_rms:
+        #         self.obs_rms_n[a_id].update(obs_dict[a_id])
+        # # in case different agents share the same noramlizer, one should normlize obs
+        # # after all normalizers are updated.
+        # for a_id in obs_dict.keys():
+        #     obs_dict[a_id] = self.normalize_obs(obs_dict[a_id], a_id)
+        # return dict(obs_dict)
 
     def step(
         self,
@@ -235,16 +238,13 @@ class BaseVectorEnv(Env):
         self._assert_is_not_closed()
         id = self._wrap_id(id)
         if not self.is_async:
-            for action in action_n.values():
-                assert len(action) == len(id), action
+            assert len(action_n) == len(id), action_n
             for i, j in enumerate(id):
-                self.workers[j].send_action(
-                    {_agent: action[i] for _agent, action in action_n.items()}
-                )
+                self.workers[j].send_action(action_n[i])
             result = []
             for j in id:
                 obs, rew, done, info = self.workers[j].get_result()
-                for a_id in self.agent_ids:
+                for a_id in info.keys():
                     info[a_id]["env_id"] = j
                 result.append((obs, rew, done, info))
         else:
@@ -270,29 +270,30 @@ class BaseVectorEnv(Env):
                 self.waiting_conn.pop(waiting_index)
                 env_id = self.waiting_id.pop(waiting_index)
                 obs, rew, done, info = conn.get_result()
-                for a_id in self.agent_ids:
+                for a_id in info.keys():
                     info[a_id]["env_id"] = j
                 result.append((obs, rew, done, info))
                 self.ready_id.append(env_id)
         obs_list, rew_list, done_list, info_list = zip(*result)
-        obs_dict, rew_dict, done_dict, info_dict = map(
-            list_dict_to_dict_list, [obs_list, rew_list, done_list, info_list]
-        )
-        for a_id in obs_dict.keys():
-            try:
-                obs_dict[a_id] = np.stack(obs_dict[a_id])
-            except ValueError:  # different len(obs)
-                obs_dict[a_id] = np.array(obs_dict[a_id], dtype=object)
-            rew_dict[a_id], done_dict[a_id], info_dict[a_id] = map(
-                np.stack, [rew_dict[a_id], done_dict[a_id], info_dict[a_id]]
-            )
-            if self.obs_rms_n and self.update_obs_rms:
-                self.obs_rms_n[a_id].update(obs_dict[a_id])
-        # in case different agents share the same noramlizer, one should normlize obs
-        # after all normalizers are updated.
-        for a_id in obs_dict.keys():
-            obs_dict[a_id] = self.normalize_obs(obs_dict[a_id], a_id)
-        return obs_dict, rew_dict, done_dict, info_dict
+        return np.array(obs_list), np.array(rew_list), np.array(done_list), np.array(info_list)
+        # obs_dict, rew_dict, done_dict, info_dict = map(
+        #     list_dict_to_dict_list, [obs_list, rew_list, done_list, info_list]
+        # )
+        # for a_id in obs_dict.keys():
+        #     try:
+        #         obs_dict[a_id] = np.stack(obs_dict[a_id])
+        #     except ValueError:  # different len(obs)
+        #         obs_dict[a_id] = np.array(obs_dict[a_id], dtype=object)
+        #     rew_dict[a_id], done_dict[a_id], info_dict[a_id] = map(
+        #         np.stack, [rew_dict[a_id], done_dict[a_id], info_dict[a_id]]
+        #     )
+        #     if self.obs_rms_n and self.update_obs_rms:
+        #         self.obs_rms_n[a_id].update(obs_dict[a_id])
+        # # in case different agents share the same noramlizer, one should normlize obs
+        # # after all normalizers are updated.
+        # for a_id in obs_dict.keys():
+        #     obs_dict[a_id] = self.normalize_obs(obs_dict[a_id], a_id)
+        # return obs_dict, rew_dict, done_dict, info_dict
 
     def seed(
         self, seed: Optional[Union[int, List[int]]] = None

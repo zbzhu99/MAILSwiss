@@ -9,36 +9,37 @@ from numbers import Number
 
 import numpy as np
 
+from marlkit.core import PrefixDict
 from marlkit.core.vistools import plot_returns_on_same_plot
 
 
-def get_generic_path_information(paths, stat_prefix=""):
+def get_generic_path_information(env, paths, stat_prefix="", use_prefix_dict: bool = False):
     """
     Get an OrderedDict with a bunch of statistic names and values.
     """
-    # XXX(zbzhu): maybe consider a better way to get `agent_ids`
-    agent_ids = paths[0].agent_ids
-
-    """ Bunch of deprecated codes and comments. Will be removed soon.
-    # returns = [sum(path["rewards"]) for path in paths]
-    # rewards = np.vstack([path["rewards"] for path in paths])
-    # rewards = np.concatenate([path["rewards"] for path in paths])
-    # if isinstance(actions[0][0], np.ndarray):
-    #     actions = np.vstack([path["actions"] for path in paths])
-    # else:
-    #     actions = np.hstack([path["actions"] for path in paths])
-    """
 
     statistics = OrderedDict()
+    agent_ids = env.agent_ids
 
-    returns_n = {
-        a_id: [sum(path[a_id]["rewards"]) for path in paths] for a_id in agent_ids
-    }
-    rewards_n = {
-        a_id: np.concatenate([path[a_id]["rewards"] for path in paths])
-        for a_id in agent_ids
-    }
-    actions_n = {a_id: [path[a_id]["actions"] for path in paths] for a_id in agent_ids}
+    if use_prefix_dict:
+        dict_cls = PrefixDict
+    else:
+        dict_cls = dict
+    returns_n, rewards_n, actions_n, episode_len_n = [
+        dict_cls(
+            zip(agent_ids, [[] for _ in range(len(agent_ids))])
+        )
+        for _ in range(4)
+    ]
+    for path in paths:
+        for a_id in path.agent_ids:
+            returns_n[a_id].append(sum(path[a_id]["rewards"]))
+            rewards_n[a_id].append(path[a_id]["rewards"])
+            actions_n[a_id].append(path[a_id]["actions"])
+            episode_len_n[a_id].append(len(path[a_id]["terminals"]))
+    for a_id in rewards_n.keys():
+        rewards_n[a_id] = np.concatenate(rewards_n[a_id])
+        actions_n[a_id] = np.concatenate(actions_n[a_id])
 
     for a_id in agent_ids:
         statistics.update(
@@ -65,24 +66,22 @@ def get_generic_path_information(paths, stat_prefix=""):
                 always_show_all_stats=True,
             )
         )
-
-    statistics.update(
-        create_stats_ordered_dict(
-            "Ep. Len.",
-            np.array([len(path[agent_ids[0]]["terminals"]) for path in paths]),
-            stat_prefix=stat_prefix,
-            always_show_all_stats=True,
+        statistics.update(
+            create_stats_ordered_dict(
+                f"{a_id} Ep. Len.",
+                episode_len_n[a_id],
+                stat_prefix=stat_prefix,
+                always_show_all_stats=True,
+            )
         )
-    )
-    statistics["Num Paths"] = len(paths)
 
+    statistics["Num Paths"] = len(paths)
     return statistics
 
 
-def get_agent_mean_avg_returns(paths, std=False):
-    agent_ids = paths[0].agent_ids
+def get_agent_mean_avg_returns(paths, std: bool = False):
     agent_mean_returns = np.array(
-        [[np.sum(path[a_id]["rewards"]) for a_id in agent_ids] for path in paths]
+        [[np.sum(path[a_id]["rewards"]) for a_id in path.agent_ids] for path in paths]
     ).mean(axis=-1)
     if std:
         return np.mean(agent_mean_returns), np.std(agent_mean_returns)

@@ -13,10 +13,9 @@ print(sys.path)
 import gym
 
 import marlkit.torch.utils.pytorch_util as ptu
+from marlkit.core import PrefixDict
 from marlkit.envs import get_env, get_envs
 from marlkit.envs.wrappers import ProxyEnv
-from marlkit.exploration_strategies.base import PolicyWrappedWithExplorationStrategy
-from marlkit.exploration_strategies.epsilon_greedy import EpsilonGreedy
 from marlkit.launchers.launcher_util import set_seed, setup_logger
 from marlkit.policies.argmax import ArgmaxDiscretePolicy
 from marlkit.torch.algorithms.dqn.dqn import DQN
@@ -37,12 +36,13 @@ def experiment(variant):
     obs_space_n = env.observation_space_n
     act_space_n = env.action_space_n
 
+    dict_cls = PrefixDict if exp_specs["use_prefix_dict"] else dict
     if variant.get("share_policy", True):
-        policy_mapping_dict = dict(
+        policy_mapping_dict = dict_cls(
             zip(env.agent_ids, ["policy_0" for _ in range(env.n_agents)])
         )
     else:
-        policy_mapping_dict = dict(
+        policy_mapping_dict = dict_cls(
             zip(env.agent_ids, [f"policy_{i}" for i in range(env.n_agents)])
         )
 
@@ -56,8 +56,8 @@ def experiment(variant):
             print(f"Create {policy_id} for {agent_id} ...")
             obs_space = obs_space_n[agent_id]
             act_space = act_space_n[agent_id]
-            assert isinstance(obs_space, gym.spaces.Box)
-            assert isinstance(act_space, gym.spaces.Discrete)
+            assert isinstance(obs_space, gym.spaces.Box), obs_space
+            assert isinstance(act_space, gym.spaces.Discrete), act_space
             assert len(obs_space.shape) == 1
 
             obs_dim = obs_space_n[agent_id].shape[0]
@@ -75,14 +75,6 @@ def experiment(variant):
                 action_space=act_space,
                 epsilon=variant["dqn_params"]["epsilon"],
             )
-            # exploration_strategy = EpsilonGreedy(
-            #     action_space=act_space,
-            #     prob_random_action=variant["dqn_params"]["epsilon"],
-            # )
-            # policy = PolicyWrappedWithExplorationStrategy(
-            #     exploration_strategy=exploration_strategy,
-            #     policy=policy,
-            # )
 
             trainer = DQN(qf=qf, policy=policy, **variant["dqn_params"])
             policy_trainer_n[policy_id] = trainer
@@ -111,6 +103,7 @@ def experiment(variant):
         eval_env=eval_env,
         exploration_policy_n=policy_n,
         policy_mapping_dict=policy_mapping_dict,
+        use_prefix_dict=exp_specs["use_prefix_dict"],
         **variant["rl_alg_params"],
     )
 
@@ -129,7 +122,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     with open(args.experiment, "r") as spec_file:
         spec_string = spec_file.read()
-        exp_specs = yaml.load(spec_string)
+        exp_specs = yaml.load(spec_string, Loader=yaml.FullLoader)
 
     # make all seeds the same.
     exp_specs["env_specs"]["eval_env_seed"] = exp_specs["env_specs"][
