@@ -76,6 +76,7 @@ class BaseAlgorithm(metaclass=abc.ABCMeta):
         self.num_steps_per_eval = num_steps_per_eval
         self.max_path_length = max_path_length
         self.min_steps_before_training = min_steps_before_training
+        self.use_prefix_dict = use_prefix_dict
 
         self.render = render
 
@@ -208,14 +209,8 @@ class BaseAlgorithm(metaclass=abc.ABCMeta):
                     env_infos_n,
                 ) = self.training_env.step(actions_n, self.ready_env_ids)
                 if self.no_terminal:
-                    terminals_n = dict(
-                        zip(
-                            terminals_n.keys(),
-                            [
-                                [False for _ in range(len(self.ready_env_ids))]
-                                for _ in range(len(terminals_n.keys()))
-                            ],
-                        )
+                    terminals_n = np.array(
+                        [{a_id: False for a_id in term_n.keys()} for term_n in terminals_n]
                     )
                 self._n_env_steps_total += len(self.ready_env_ids)
                 env_num_steps[self.ready_env_ids] += 1
@@ -625,30 +620,38 @@ class BaseAlgorithm(metaclass=abc.ABCMeta):
 
         statistics.update(
             eval_util.get_generic_path_information(
+                self.env,
                 test_paths,
                 stat_prefix="Test",
+                use_prefix_dict=self.use_prefix_dict,
             )
         )
         if self.custom_eval_func:
             statistics.update(
                 self.custom_eval_func(
+                    self.env,
                     test_paths,
                     stat_prefix="Test",
+                    use_prefix_dict=self.use_prefix_dict,
                 )
             )
 
         if len(self._exploration_paths) > 0:
             statistics.update(
                 eval_util.get_generic_path_information(
+                    self.env,
                     self._exploration_paths,
                     stat_prefix="Exploration",
+                    use_prefix_dict=self.use_prefix_dict,
                 )
             )
             if self.custom_eval_func:
                 statistics.update(
                     self.custom_eval_func(
+                        self.env,
                         self._exploration_paths,
                         stat_prefix="Exploration",
+                        use_prefix_dict=self.use_prefix_dict,
                     )
                 )
 
