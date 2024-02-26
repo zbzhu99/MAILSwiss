@@ -1,0 +1,46 @@
+meta_data:
+  script_path: run_scripts/eval_dqn_policy.py
+  exp_name: test_policy_eval
+  description: evaluate DQN policy
+  num_workers: 1
+  using_gpus: true
+
+# -----------------------------------------------------------------------------
+variables:
+  seed: [0]
+ # -----------------------------------------------------------------------------
+constants:
+  #ablation_study: false
+  # expert_name: 'hopper_sac'
+  # expert_idx: 0
+  # scale_env_with_demo_stats: false
+  #minmax_env_with_demo_stats: false
+  #state_diff: false
+
+  policy_checkpoint: ./logs/dqn-highway-merge--qf-lr-0.0003--bs-256/dqn_highway_merge--qf_lr-0.0003--bs-256_2024_02_25_17_02_08_0000--s-0/params.pkl
+  eval_deterministic: true
+  use_prefix_dict: True
+
+  policy_net_size: 256
+  policy_num_hidden_layers: 2
+
+  num_eval_steps: 2000
+  max_path_length: 1000
+  no_terminal: false
+  render: ture
+  render_kwargs: {}
+  render_mode: rgb_array
+
+  video_path: './videos/'
+
+  save_samples: true
+
+  env_specs:
+    env_creator: "highway"
+    env_name: "merge-v2"
+    env_kwargs: {}
+    training_env_num: 5
+    eval_env_num: 5
+    training_env_seed: 0
+    eval_env_seed: 1
+

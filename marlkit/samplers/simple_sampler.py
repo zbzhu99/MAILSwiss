@@ -22,6 +22,7 @@ def rollout(
     observations_n = eval_env.reset(ready_env_ids)
     env_num_steps = np.zeros(env_num, dtype=int)
 
+    images = []
     for _ in range(max_path_length):
         actions_n = []
         for obs_n in observations_n:
@@ -31,7 +32,8 @@ def rollout(
                 act_n[a_id] = policy_n[p_id].get_actions(obs[None])[0]
             actions_n.append(act_n)
         if render:
-            eval_env.render(**render_kwargs)
+            img = eval_env.render(**render_kwargs)
+            images.append(img)
 
         next_observations_n, rewards_n, terminals_n, env_infos_n = eval_env.step(
             actions_n, ready_env_ids
